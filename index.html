@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>MechFinder — Find Nearby Mechanics</title>
+  <link rel="stylesheet" href="/static/css/main.css"/>
+  <style>
+    body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+      background:radial-gradient(ellipse 60% 50% at 80% 20%,rgba(255,107,43,.12),transparent 60%),
+      radial-gradient(ellipse 40% 40% at 10% 80%,rgba(255,107,43,.06),transparent 50%);}
+    .hero{position:relative;z-index:1;min-height:100vh;display:grid;grid-template-columns:1fr 1fr;align-items:center;max-width:1200px;margin:0 auto;padding:calc(var(--nav-h) + 60px) 48px 80px;gap:60px}
+    .hero-badge{display:inline-flex;align-items:center;gap:8px;background:var(--accent-soft);border:1px solid rgba(255,107,43,.2);border-radius:100px;padding:5px 14px 5px 8px;font-size:12px;font-weight:600;color:var(--accent2);margin-bottom:24px}
+    .ldot{width:7px;height:7px;background:var(--accent);border-radius:50%;animation:pulse 1.8s ease-in-out infinite}
+    .hero-title{font-family:var(--fd);font-size:clamp(44px,5.5vw,72px);line-height:1.02;letter-spacing:-2px;margin-bottom:22px}
+    .ta{color:var(--accent)}
+    .to{-webkit-text-stroke:1.5px var(--accent);color:transparent}
+    .hero-sub{font-size:16px;line-height:1.8;color:var(--text2);max-width:440px;margin-bottom:40px}
+    .hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:52px}
+    .hero-stats{display:flex;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r2);overflow:hidden;width:fit-content}
+    .hstat{padding:16px 24px;border-right:1px solid var(--border)}
+    .hstat:last-child{border-right:none}
+    .hstat-n{font-family:var(--fd);font-size:22px;color:var(--text);display:block}
+    .hstat-l{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-top:2px}
+    .hero-visual{display:flex;justify-content:center;align-items:center}
+    .float-card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r3);padding:28px;width:300px;box-shadow:0 32px 80px rgba(0,0,0,.5);animation:float 6s ease-in-out infinite;position:relative}
+    .fc-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+    .fc-lbl{font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.7px}
+    .mr{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:var(--r);border:1px solid var(--border);margin-bottom:8px;cursor:pointer;transition:all .18s}
+    .mr:last-of-type{margin-bottom:0}
+    .mr:hover{background:var(--surface2)}
+    .mav{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+    .mn{font-size:13px;font-weight:600;color:var(--text)}
+    .ms{font-size:11px;color:var(--text2)}
+    .mm{margin-left:auto;text-align:right}
+    .md{font-size:12px;color:var(--accent);font-weight:700}
+    .msr{font-size:11px;color:var(--warn)}
+    .fc-btn{width:100%;margin-top:16px;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:var(--r);font-family:var(--fb);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 20px var(--accent-glow);transition:all .2s}
+    .fc-btn:hover{background:var(--accent2)}
+    .fbadge{position:absolute;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r);padding:9px 14px;display:flex;align-items:center;gap:9px;box-shadow:0 8px 32px rgba(0,0,0,.4);font-size:12px;white-space:nowrap}
+    .fb1{top:-16px;right:-24px;animation:float 7s ease-in-out infinite;animation-delay:-2s}
+    .fb2{bottom:-16px;left:-24px;animation:float 8s ease-in-out infinite;animation-delay:-4s}
+    .fbi{font-size:18px}
+    .fbt{font-weight:700;color:var(--text);font-size:12px}
+    .fbs{font-size:10px;color:var(--text2)}
+    .features{position:relative;z-index:1;display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--bg2)}
+    .feat{display:flex;align-items:center;gap:14px;padding:24px 28px;border-right:1px solid var(--border);transition:background .2s}
+    .feat:last-child{border-right:none}
+    .feat:hover{background:var(--surface)}
+    .feat-ico{width:40px;height:40px;border-radius:12px;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+    .ft{font-size:14px;font-weight:600;color:var(--text);margin-bottom:3px}
+    .fd2{font-size:12px;color:var(--text2);line-height:1.5}
+    @media(max-width:900px){.hero{grid-template-columns:1fr;padding:calc(var(--nav-h)+40px) 28px 60px;text-align:center}.hero-badge,.hero-sub,.hero-stats{margin-left:auto;margin-right:auto}.hero-actions{justify-content:center}.hero-visual{display:none}.features{grid-template-columns:1fr 1fr}}
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <a href="/" class="nav-logo"><div class="logo-mark">⚙</div><span class="logo-name">MechFinder</span></a>
+  <ul class="nav-links">
+    <li><a href="/" class="active">Home</a></li>
+    <li><a href="/map">Find Mechanics</a></li>
+    <li><a href="/services">Services</a></li>
+    <li><a href="/report">Report Problem</a></li>
+    <li><a href="/login">Login</a></li>
+    <li><a href="/register" class="cta">Register</a></li>
+  </ul>
+</nav>
+<section class="hero page anim-up">
+  <div>
+    <div class="hero-badge"><span class="ldot"></span>12 mechanics available near you</div>
+    <h1 class="hero-title">Find Nearby<br/><span class="ta">Mechanics</span><br/><span class="to">Instantly.</span></h1>
+    <p class="hero-sub">Connect with certified, reviewed mechanics in your area in under 10 minutes. Transparent pricing. No surprises.</p>
+    <div class="hero-actions">
+      <a href="/map" class="btn btn-primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Search Mechanics</a>
+      <a href="/report" class="btn btn-ghost"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Report a Problem</a>
+    </div>
+    <div class="hero-stats">
+      <div class="hstat"><span class="hstat-n">2,400+</span><span class="hstat-l">Mechanics</span></div>
+      <div class="hstat"><span class="hstat-n">98%</span><span class="hstat-l">Satisfaction</span></div>
+      <div class="hstat"><span class="hstat-n">&lt;10 min</span><span class="hstat-l">Response</span></div>
+    </div>
+  </div>
+  <div class="hero-visual anim-up-2">
+    <div style="position:relative">
+      <div class="float-card">
+        <div class="fc-hd"><span class="fc-lbl">Nearby Mechanics</span><span class="badge badge-green"><span style="width:6px;height:6px;background:var(--ok);border-radius:50%;display:inline-block;animation:pulse 1.5s infinite"></span>&nbsp;Live</span></div>
+        <div class="mr"><div class="mav" style="background:rgba(255,107,43,.12)">👨‍🔧</div><div><div class="mn">James Okafor</div><div class="ms">Engine · Transmission</div></div><div class="mm"><div class="md">0.3 mi</div><div class="msr">★ 4.9</div></div></div>
+        <div class="mr"><div class="mav" style="background:rgba(52,211,153,.1)">🧑‍🔧</div><div><div class="mn">Sofia Reyes</div><div class="ms">Brakes · Suspension</div></div><div class="mm"><div class="md">0.8 mi</div><div class="msr">★ 4.8</div></div></div>
+        <div class="mr"><div class="mav" style="background:rgba(251,191,36,.1)">👩‍🔧</div><div><div class="mn">Priya Nair</div><div class="ms">AC · Full Service</div></div><div class="mm"><div class="md">1.1 mi</div><div class="msr">★ 5.0</div></div></div>
+        <button class="fc-btn" onclick="location.href='/map'"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Find a Mechanic Now</button>
+      </div>
+      <div class="fbadge fb1"><span class="fbi">✅</span><div><div class="fbt">Verified Pros</div><div class="fbs">All mechanics certified</div></div></div>
+      <div class="fbadge fb2"><span class="fbi">⚡</span><div><div class="fbt">Instant Match</div><div class="fbs">Under 10 minutes</div></div></div>
+    </div>
+  </div>
+</section>
+<section class="features">
+  <div class="feat"><div class="feat-ico">🔧</div><div><div class="ft">Verified Pros</div><div class="fd2">All mechanics certified & reviewed</div></div></div>
+  <div class="feat"><div class="feat-ico">📍</div><div><div class="ft">Real-Time Location</div><div class="fd2">Track mechanics as they arrive</div></div></div>
+  <div class="feat"><div class="feat-ico">💬</div><div><div class="ft">Instant Chat</div><div class="fd2">Describe issues before arrival</div></div></div>
+  <div class="feat"><div class="feat-ico">🛡️</div><div><div class="ft">Insured Work</div><div class="fd2">Every job is guaranteed</div></div></div>
+</section>
+<footer class="footer">© 2026 MechFinder · All rights reserved</footer>
+</body>
+</html>

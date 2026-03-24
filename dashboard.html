@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>MechFinder — Dashboard</title>
+  <link rel="stylesheet" href="/static/css/main.css"/>
+  <style>
+    .page{background:var(--bg)}
+    .welcome{background:linear-gradient(135deg,#1a0802 0%,#2d1205 50%,#1a0d06 100%);padding:36px 0;position:relative;overflow:hidden}
+    .welcome::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 60% 50%,rgba(255,107,43,.18),transparent 70%)}
+    .welcome-inner{max-width:1120px;margin:0 auto;padding:0 32px;display:flex;align-items:center;justify-content:space-between;gap:20px;position:relative;z-index:1}
+    .wgreet{font-size:13px;color:rgba(255,255,255,.55);margin-bottom:6px;display:flex;align-items:center;gap:8px}
+    .wlive{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:100px;padding:2px 10px;font-size:11px;font-weight:600;color:rgba(255,255,255,.8)}
+    .wname{font-family:var(--fd);font-size:34px;color:#fff;line-height:1.1}
+    .wstats{display:flex;gap:36px}
+    .ws-n{font-family:var(--fd);font-size:26px;color:#fff;display:block}
+    .ws-l{font-size:11px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;display:block}
+    .main-grid{max-width:1120px;margin:0 auto;padding:28px 32px 60px;display:grid;grid-template-columns:1fr 340px;gap:22px}
+    .sec-hd{font-family:var(--fd);font-size:18px;color:var(--text);margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
+    .sec-link{font-family:var(--fb);font-size:12px;color:var(--accent);text-decoration:none;font-weight:500}
+    .sec-link:hover{text-decoration:underline}
+    .action-cards{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:22px}
+    .acard{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:26px 22px;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;gap:14px}
+    .acard:hover{transform:translateY(-2px);border-color:var(--border2);box-shadow:0 12px 40px rgba(0,0,0,.3)}
+    .acard-primary:hover{border-color:rgba(255,107,43,.3);box-shadow:0 12px 40px rgba(255,107,43,.1)}
+    .acard-ico{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px}
+    .acard-primary .acard-ico{background:var(--accent-soft)}
+    .acard-secondary .acard-ico{background:var(--ok-soft)}
+    .acard-title{font-size:16px;font-weight:700;color:var(--text);margin-bottom:4px}
+    .acard-desc{font-size:13px;color:var(--text2);line-height:1.6}
+    .acard-btn{display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:10px;font-family:var(--fb);font-size:13px;font-weight:600;border:none;cursor:pointer;transition:all .2s;width:fit-content;text-decoration:none}
+    .acard-primary .acard-btn{background:var(--accent);color:#fff;box-shadow:0 3px 12px var(--accent-glow)}
+    .acard-primary .acard-btn:hover{background:var(--accent2)}
+    .acard-secondary .acard-btn{background:var(--ok-soft);color:var(--ok)}
+    .acard-secondary .acard-btn:hover{background:rgba(52,211,153,.2)}
+    .activity{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:22px}
+    .act-item{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+    .act-item:last-child{border-bottom:none;padding-bottom:0}
+    .act-item:first-child{padding-top:0}
+    .adot{width:9px;height:9px;border-radius:50%;flex-shrink:0;margin-top:4px}
+    .dot-o{background:var(--accent);box-shadow:0 0 6px var(--accent-glow)}
+    .dot-g{background:var(--ok);box-shadow:0 0 6px rgba(52,211,153,.4)}
+    .dot-y{background:var(--warn);box-shadow:0 0 6px rgba(251,191,36,.4)}
+    .dot-m{background:var(--surface3)}
+    .at{font-size:14px;font-weight:600;color:var(--text);margin-bottom:3px}
+    .as{font-size:12px;color:var(--text2)}
+    .atime{font-size:11px;color:var(--text3);white-space:nowrap;margin-left:auto;padding-left:8px}
+    .sidebar{display:flex;flex-direction:column;gap:20px}
+    .map-widget{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden}
+    .map-hdr{padding:14px 18px 10px;display:flex;align-items:center;justify-content:space-between}
+    .map-hdr-t{font-family:var(--fd);font-size:15px}
+    .map-body{height:170px;background:var(--bg3);position:relative;overflow:hidden;border-top:1px solid var(--border)}
+    .map-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,107,43,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,107,43,.04) 1px,transparent 1px);background-size:28px 28px}
+    .road{position:absolute;background:rgba(255,107,43,.07)}
+    .rh{width:100%;height:2px}.rv{height:100%;width:2px}
+    .you-pin{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center}
+    .you-dot{width:13px;height:13px;background:var(--accent);border-radius:50%;border:2.5px solid var(--bg3);box-shadow:0 0 12px var(--accent-glow)}
+    .you-ring{position:absolute;top:50%;left:50%;width:13px;height:13px;border:2px solid var(--accent);border-radius:50%;animation:mripple 2.5s ease-out infinite}
+    .you-ring2{animation-delay:.9s}
+    @keyframes mripple{0%{transform:translate(-50%,-50%) scale(1);opacity:.8}100%{transform:translate(-50%,-50%) scale(4);opacity:0}}
+    .you-lbl{font-size:9px;font-weight:700;color:#fff;background:var(--accent);padding:2px 7px;border-radius:100px;margin-top:5px;white-space:nowrap}
+    .mp{position:absolute;display:flex;flex-direction:column;align-items:center}
+    .mpdot{width:9px;height:9px;background:var(--ok);border-radius:50%;border:2px solid var(--bg3);box-shadow:0 0 6px rgba(52,211,153,.6)}
+    .mplbl{font-size:8px;color:var(--text3);margin-top:2px}
+    .map-ftr{padding:10px 18px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+    .map-ftr-t{font-size:12px;color:var(--text2)}
+    .map-exp{font-size:12px;color:var(--accent);cursor:pointer;font-weight:500;text-decoration:none}
+    .map-exp:hover{text-decoration:underline}
+    .mech-list{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:20px}
+    .mrow{display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:var(--r);cursor:pointer;transition:background .15s}
+    .mrow:hover{background:var(--surface2)}
+    .mav{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0;position:relative}
+    .mstatus{position:absolute;bottom:-2px;right:-2px;width:10px;height:10px;border-radius:50%;border:2px solid var(--surface)}
+    .av-g{background:var(--ok)}.av-y{background:var(--warn)}.av-r{background:var(--surface3)}
+    .mname{font-size:13px;font-weight:600;color:var(--text)}
+    .mspec{font-size:11px;color:var(--text2)}
+    .mmeta{margin-left:auto;text-align:right}
+    .mdist{font-size:12px;color:var(--accent);font-weight:700}
+    .mstars{font-size:11px;color:var(--warn)}
+    @media(max-width:900px){.main-grid{grid-template-columns:1fr}.sidebar{display:none}}
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <a href="/" class="nav-logo"><div class="logo-mark">⚙</div><span class="logo-name">MechFinder</span></a>
+  <ul class="nav-links">
+    <li><a href="/dashboard" class="active">Dashboard</a></li>
+    <li><a href="/map">Find Mechanics</a></li>
+    <li><a href="/services">Services</a></li>
+    <li><a href="/report">Report</a></li>
+    <li><a href="/settings">Settings</a></li>
+    <li><a href="/logout" class="cta">Logout</a></li>
+  </ul>
+</nav>
+<div class="page">
+  <div class="welcome">
+    <div class="welcome-inner">
+      <div>
+        <div class="wgreet"><span class="wlive"><span style="width:6px;height:6px;background:#fff;border-radius:50%;animation:pulse 1.8s infinite;display:inline-block"></span>&nbsp;Live</span> Good to see you</div>
+        <div class="wname">Welcome to MechFinder 🔧</div>
+      </div>
+      <div class="wstats">
+        <div><span class="ws-n">3</span><span class="ws-l">Active Jobs</span></div>
+        <div><span class="ws-n">12</span><span class="ws-l">Mechanics Nearby</span></div>
+        <div><span class="ws-n">4.9</span><span class="ws-l">Your Rating</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="main-grid">
+    <div>
+      <div class="sec-hd">Quick Actions <a href="/map" class="sec-link">View all →</a></div>
+      <div class="action-cards">
+        <div class="acard acard-primary">
+          <div class="acard-ico">🔍</div>
+          <div><div class="acard-title">Find a Mechanic</div><div class="acard-desc">Search nearby certified mechanics and get instant help.</div></div>
+          <a href="/map" class="acard-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Search Now</a>
+        </div>
+        <div class="acard acard-secondary">
+          <div class="acard-ico">🚨</div>
+          <div><div class="acard-title">Report a Problem</div><div class="acard-desc">Describe your vehicle issue and get a unique report ID.</div></div>
+          <a href="/report" class="acard-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Report Now</a>
+        </div>
+      </div>
+      <div class="sec-hd" style="margin-top:8px">Recent Activity</div>
+      <div class="activity">
+        <div class="act-item"><div class="adot dot-g"></div><div><div class="at">Oil Change Completed</div><div class="as">Mechanic: Carlos Auto Works · Invoice #4821</div></div><div class="atime">2h ago</div></div>
+        <div class="act-item"><div class="adot dot-o"></div><div><div class="at">New Mechanic Matched</div><div class="as">QuickFix Garage is en route · ETA 8 min</div></div><div class="atime">4h ago</div></div>
+        <div class="act-item"><div class="adot dot-y"></div><div><div class="at">Report Submitted</div><div class="as">Report ID: MF-38291 · Brake issue reported</div></div><div class="atime">Yesterday</div></div>
+        <div class="act-item"><div class="adot dot-m"></div><div><div class="at">Account Created</div><div class="as">Welcome to MechFinder! Profile set up complete.</div></div><div class="atime">2d ago</div></div>
+      </div>
+    </div>
+    <div class="sidebar">
+      <div class="map-widget">
+        <div class="map-hdr"><div class="map-hdr-t">Your Location</div><span class="badge badge-green">3 Nearby</span></div>
+        <div class="map-body">
+          <div class="map-grid"></div>
+          <div class="road rh" style="top:42%"></div><div class="road rh" style="top:72%"></div>
+          <div class="road rv" style="left:32%"></div><div class="road rv" style="left:67%"></div>
+          <div class="you-pin"><div class="you-dot"></div><div class="you-ring"></div><div class="you-ring you-ring2"></div><div class="you-lbl">You</div></div>
+          <div class="mp" style="top:22%;left:18%"><div class="mpdot"></div><div class="mplbl">Carlos</div></div>
+          <div class="mp" style="top:58%;left:70%"><div class="mpdot"></div><div class="mplbl">Sofia</div></div>
+          <div class="mp" style="top:15%;left:56%"><div class="mpdot"></div><div class="mplbl">Priya</div></div>
+        </div>
+        <div class="map-ftr"><span class="map-ftr-t">3 mechanics nearby</span><a href="/map" class="map-exp">Full Map →</a></div>
+      </div>
+      <div class="mech-list">
+        <div class="sec-hd" style="margin-bottom:12px">Nearby Mechanics</div>
+        <div class="mrow"><div class="mav" style="background:rgba(255,107,43,.12)">👨‍🔧<div class="mstatus av-g"></div></div><div><div class="mname">Carlos Auto</div><div class="mspec">Engine · Brakes</div></div><div class="mmeta"><div class="mdist">0.8 km</div><div class="mstars">★ 4.8</div></div></div>
+        <div class="mrow"><div class="mav" style="background:rgba(52,211,153,.1)">🧑‍🔧<div class="mstatus av-g"></div></div><div><div class="mname">QuickFix</div><div class="mspec">Tyres · Battery</div></div><div class="mmeta"><div class="mdist">1.2 km</div><div class="mstars">★ 4.5</div></div></div>
+        <div class="mrow"><div class="mav" style="background:rgba(251,191,36,.1)">👩‍🔧<div class="mstatus av-y"></div></div><div><div class="mname">Green Lane</div><div class="mspec">Full Service</div></div><div class="mmeta"><div class="mdist">2.1 km</div><div class="mstars">★ 4.9</div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+<footer class="footer">© 2026 MechFinder · All rights reserved</footer>
+</body>
+</html>
