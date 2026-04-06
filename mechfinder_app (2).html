@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>MechFinder</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+:root{
+  --bg:#07080a;--surface:#0f1114;--card:#13151a;--raised:#181c22;
+  --border:#23272f;--border2:#2e3440;
+  --amber:#f59e0b;--amberD:#d97706;--amberL:#fcd34d;
+  --green:#10b981;--greenD:#059669;--red:#ef4444;
+  --blue:#3b82f6;--blueD:#2563eb;--cyan:#06b6d4;
+  --purple:#8b5cf6;--purpleD:#7c3aed;--pink:#ec4899;
+  --accent:var(--amber);--accentD:var(--amberD);--accentL:var(--amberL);
+  --white:#f1f0ed;--muted:#6b7280;--muted2:#9ca3af;
+  --glow-amber:0 0 40px rgba(245,158,11,0.2);
+  --glow-green:0 0 40px rgba(16,185,129,0.2);
+  --glow-blue:0 0 40px rgba(59,130,246,0.2);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+
+/* ═══ ANIMATED BACKGROUND ═══ */
+body{
+  background:var(--bg);color:var(--white);font-family:'Outfit',sans-serif;
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  padding:20px;overflow-x:hidden;position:relative;
+}
+#bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;}
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(245,158,11,0.025) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(245,158,11,0.025) 1px,transparent 1px);
+  background-size:56px 56px;
+  animation:gridDrift 20s linear infinite;
+}
+@keyframes gridDrift{0%{background-position:0 0}100%{background-position:56px 56px}}
+body::after{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 55% 45% at 10% 15%,rgba(245,158,11,0.07) 0%,transparent 65%),
+    radial-gradient(ellipse 45% 40% at 90% 80%,rgba(59,130,246,0.06) 0%,transparent 65%),
+    radial-gradient(ellipse 35% 30% at 80% 20%,rgba(139,92,246,0.05) 0%,transparent 60%),
+    radial-gradient(ellipse 30% 35% at 20% 80%,rgba(16,185,129,0.05) 0%,transparent 60%);
+}
+
+.app{width:100%;max-width:480px;position:relative;z-index:1;}
+
+/* ═══ LOGO ═══ */
+.logo-bar{display:flex;align-items:center;gap:12px;margin-bottom:26px;}
+.logo-icon{
+  width:42px;height:42px;
+  background:linear-gradient(135deg,var(--amber),var(--amberD));
+  border-radius:12px;display:flex;align-items:center;justify-content:center;
+  font-size:20px;
+  box-shadow:0 4px 20px rgba(245,158,11,0.5),0 0 0 1px rgba(245,158,11,0.2);
+  animation:logoFloat 3s ease-in-out infinite;
+}
+@keyframes logoFloat{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-3px) rotate(-3deg)}}
+.logo-text{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:3px;}
+.logo-text span{
+  background:linear-gradient(90deg,var(--amber),var(--amberL),var(--cyan));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  background-size:200% auto;animation:shimmer 3s linear infinite;
+}
+@keyframes shimmer{0%{background-position:0% center}100%{background-position:200% center}}
+.logo-tagline{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-top:2px;}
+
+/* ═══ CARD ═══ */
+.card{
+  background:linear-gradient(145deg,rgba(19,21,26,0.95),rgba(15,17,20,0.98));
+  border:1px solid var(--border);border-radius:22px;
+  padding:32px;
+  box-shadow:0 32px 80px rgba(0,0,0,0.6),var(--glow-amber);
+  animation:popIn 0.45s cubic-bezier(0.34,1.56,0.64,1) both;
+  position:relative;overflow:hidden;
+  backdrop-filter:blur(8px);
+}
+.card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent 0%,var(--amber) 30%,var(--cyan) 60%,var(--purple) 80%,transparent 100%);
+  animation:borderFlow 4s linear infinite;background-size:200% auto;
+}
+@keyframes borderFlow{0%{background-position:0% center}100%{background-position:200% center}}
+.card::after{
+  content:'';position:absolute;top:-80px;right:-80px;
+  width:200px;height:200px;border-radius:50%;
+  background:radial-gradient(circle,rgba(245,158,11,0.06) 0%,transparent 70%);
+  pointer-events:none;
+}
+@keyframes popIn{from{opacity:0;transform:scale(0.92) translateY(16px)}to{opacity:1;transform:scale(1) translateY(0)}}
+
+.card-title{
+  font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:2px;margin-bottom:6px;
+  background:linear-gradient(135deg,var(--white) 40%,var(--amberL));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.card-sub{color:var(--muted2);font-size:14px;font-weight:400;margin-bottom:28px;line-height:1.6;}
+
+/* ═══ CHOICE BUTTONS ═══ */
+.choice-grid{display:flex;flex-direction:column;gap:10px;}
+.choice-btn{
+  display:flex;align-items:center;gap:14px;
+  background:linear-gradient(135deg,rgba(24,28,34,0.8),rgba(19,21,26,0.9));
+  border:1.5px solid var(--border);border-radius:16px;padding:17px 18px;
+  cursor:pointer;text-align:left;transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+  font-family:'Outfit',sans-serif;position:relative;overflow:hidden;
+}
+.choice-btn::before{
+  content:'';position:absolute;inset:0;opacity:0;transition:opacity 0.3s;
+  background:linear-gradient(135deg,rgba(245,158,11,0.06),rgba(6,182,212,0.04));
+}
+.choice-btn::after{content:'›';position:absolute;right:18px;color:var(--muted);font-size:22px;transition:all 0.25s;}
+.choice-btn:hover{border-color:var(--amber);transform:translateX(5px) scale(1.01);box-shadow:0 8px 32px rgba(245,158,11,0.12),-4px 0 0 var(--amber);}
+.choice-btn:hover::before{opacity:1;}
+.choice-btn:hover::after{color:var(--amber);right:14px;}
+.choice-icon{width:46px;height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:21px;flex-shrink:0;transition:transform 0.25s;}
+.choice-btn:hover .choice-icon{transform:scale(1.1) rotate(-5deg);}
+.ci-orange{background:linear-gradient(135deg,rgba(245,158,11,0.15),rgba(245,158,11,0.05));border:1px solid rgba(245,158,11,0.25);}
+.ci-green{background:linear-gradient(135deg,rgba(16,185,129,0.15),rgba(16,185,129,0.05));border:1px solid rgba(16,185,129,0.25);}
+.ci-blue{background:linear-gradient(135deg,rgba(59,130,246,0.15),rgba(59,130,246,0.05));border:1px solid rgba(59,130,246,0.25);}
+.ci-purple{background:linear-gradient(135deg,rgba(139,92,246,0.15),rgba(139,92,246,0.05));border:1px solid rgba(139,92,246,0.25);}
+.ci-cyan{background:linear-gradient(135deg,rgba(6,182,212,0.15),rgba(6,182,212,0.05));border:1px solid rgba(6,182,212,0.25);}
+.ci-pink{background:linear-gradient(135deg,rgba(236,72,153,0.15),rgba(236,72,153,0.05));border:1px solid rgba(236,72,153,0.25);}
+.choice-label{font-size:15px;font-weight:700;color:var(--white);}
+.choice-desc{font-size:12px;color:var(--muted2);font-weight:400;margin-top:2px;}
+
+/* ═══ FORM ═══ */
+.form-group{margin-bottom:16px;}
+.form-group label{
+  display:block;font-size:11px;font-weight:700;letter-spacing:1.4px;
+  text-transform:uppercase;color:var(--muted);margin-bottom:7px;
+}
+.form-group input,.form-group select{
+  width:100%;background:rgba(7,8,10,0.7);
+  border:1.5px solid var(--border);border-radius:12px;
+  padding:14px 16px;font-family:'Outfit',sans-serif;
+  font-size:15px;color:var(--white);outline:none;
+  transition:border-color 0.25s,box-shadow 0.25s,background 0.25s;
+  appearance:none;
+}
+.form-group select option{background:var(--card);}
+.form-group input:focus,.form-group select:focus{
+  border-color:var(--amber);
+  box-shadow:0 0 0 3px rgba(245,158,11,0.12),0 0 20px rgba(245,158,11,0.08);
+  background:rgba(7,8,10,0.9);
+}
+.form-group input::placeholder{color:var(--muted);}
+
+/* ═══ BUTTONS ═══ */
+.btn{
+  width:100%;padding:15px;border:none;border-radius:13px;
+  font-family:'Outfit',sans-serif;font-size:16px;font-weight:700;
+  cursor:pointer;transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+  position:relative;overflow:hidden;
+}
+.btn::after{
+  content:'';position:absolute;inset:0;opacity:0;
+  background:linear-gradient(135deg,rgba(255,255,255,0.1),transparent);
+  transition:opacity 0.3s;
+}
+.btn:hover::after{opacity:1;}
+.btn-primary{
+  background:linear-gradient(135deg,var(--amber) 0%,var(--amberD) 50%,#c2410c 100%);
+  color:#000;box-shadow:0 4px 24px rgba(245,158,11,0.4),0 0 0 1px rgba(245,158,11,0.2);
+  background-size:200% auto;animation:btnShimmer 3s linear infinite;
+}
+@keyframes btnShimmer{0%{background-position:0% center}100%{background-position:200% center}}
+.btn-primary:hover{transform:translateY(-3px) scale(1.01);box-shadow:0 12px 36px rgba(245,158,11,0.55),0 0 60px rgba(245,158,11,0.2);}
+.btn-ghost{background:transparent;border:1.5px solid var(--border2);color:var(--muted2);}
+.btn-ghost:hover{border-color:var(--amber);color:var(--white);box-shadow:0 0 20px rgba(245,158,11,0.1);}
+.btn+.btn{margin-top:10px;}
+
+/* ═══ PW HINTS ═══ */
+.pw-hints{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+.pw-hint{font-size:11px;padding:3px 10px;border-radius:20px;border:1px solid var(--border);color:var(--muted);background:var(--surface);transition:all 0.25s;}
+.pw-hint.ok{background:rgba(16,185,129,0.1);border-color:rgba(16,185,129,0.4);color:var(--green);box-shadow:0 0 8px rgba(16,185,129,0.1);}
+
+/* ═══ ALERTS ═══ */
+.alert{padding:12px 16px;border-radius:11px;font-size:13px;font-weight:600;margin-bottom:14px;display:none;align-items:center;gap:8px;}
+.alert.error{background:rgba(239,68,68,0.12);color:var(--red);border:1px solid rgba(239,68,68,0.25);display:flex;box-shadow:0 0 20px rgba(239,68,68,0.08);}
+.alert.success{background:rgba(16,185,129,0.12);color:var(--green);border:1px solid rgba(16,185,129,0.25);display:flex;box-shadow:0 0 20px rgba(16,185,129,0.08);}
+
+/* ═══ BACK ═══ */
+.back-link{display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:13px;cursor:pointer;margin-bottom:20px;transition:color 0.2s;background:none;border:none;font-family:'Outfit',sans-serif;padding:0;}
+.back-link:hover{color:var(--amber);}
+
+/* ═══ SERVICES GRID ═══ */
+.services-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;max-height:260px;overflow-y:auto;padding-right:4px;margin-bottom:14px;}
+.services-grid::-webkit-scrollbar{width:3px;}
+.services-grid::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+.service-item{
+  display:flex;align-items:center;gap:8px;
+  background:linear-gradient(135deg,rgba(15,17,20,0.8),rgba(19,21,26,0.6));
+  border:1.5px solid var(--border);border-radius:11px;padding:10px 12px;
+  cursor:pointer;transition:all 0.2s;font-size:12px;font-weight:600;user-select:none;
+}
+.service-item:hover{border-color:var(--amber);transform:scale(1.02);}
+.service-item.selected{background:rgba(245,158,11,0.1);border-color:var(--amber);color:var(--amber);box-shadow:0 0 16px rgba(245,158,11,0.1);}
+.svc-check{width:16px;height:16px;border:2px solid var(--border);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;transition:all 0.2s;}
+.service-item.selected .svc-check{background:var(--amber);border-color:var(--amber);color:#000;}
+.svc-price{color:var(--muted);font-size:10px;font-weight:400;display:block;margin-top:1px;}
+
+/* ═══ COST BAR ═══ */
+.cost-bar{
+  background:linear-gradient(135deg,rgba(245,158,11,0.1),rgba(245,158,11,0.04));
+  border:1px solid rgba(245,158,11,0.25);border-radius:13px;
+  padding:14px 18px;display:none;margin-bottom:14px;
+  align-items:center;justify-content:space-between;
+  box-shadow:0 0 24px rgba(245,158,11,0.08);
+}
+.cost-bar.show{display:flex;}
+.cost-label{font-size:12px;color:var(--muted2);}
+.cost-value{font-family:'Bebas Neue',sans-serif;font-size:30px;color:var(--amber);letter-spacing:1px;text-shadow:0 0 20px rgba(245,158,11,0.4);}
+
+/* ═══ RESULT ═══ */
+.booking-id{font-family:'JetBrains Mono',monospace;font-size:13px;background:var(--surface);border:1px solid var(--border);color:var(--muted2);padding:6px 14px;border-radius:8px;display:inline-block;margin-bottom:18px;}
+.result-block{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:18px;margin-bottom:12px;}
+.result-block.success-block{border-color:rgba(16,185,129,0.3);background:rgba(16,185,129,0.04);}
+.rb-label{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+.chip-list{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
+.chip{
+  background:linear-gradient(135deg,rgba(245,158,11,0.12),rgba(245,158,11,0.06));
+  color:var(--amber);border:1px solid rgba(245,158,11,0.3);
+  font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;
+}
+.amount-display{font-family:'Bebas Neue',sans-serif;font-size:48px;color:var(--amber);letter-spacing:1px;line-height:1;text-shadow:0 0 30px rgba(245,158,11,0.3);}
+/* ═══ MECHANIC ROW ═══ */
+.mechanic-row{display:flex;align-items:center;gap:14px;padding-top:14px;margin-top:14px;border-top:1px solid var(--border);}
+.mech-av{
+  width:52px;height:52px;border-radius:50%;
+  background:linear-gradient(135deg,var(--amber),var(--red));
+  display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;
+  box-shadow:0 4px 20px rgba(245,158,11,0.35);animation:mechFloat 3s ease-in-out infinite;
+}
+@keyframes mechFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.mech-nm{font-size:16px;font-weight:700;}
+.mech-ph{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted2);margin-top:2px;}
+
+/* ═══ STARS ═══ */
+.stars-row{display:flex;gap:10px;margin:12px 0;}
+.star-btn{font-size:34px;cursor:pointer;opacity:0.15;transition:opacity 0.2s,transform 0.2s,filter 0.2s;background:none;border:none;color:var(--amber);padding:0;}
+.star-btn.lit{opacity:1;filter:drop-shadow(0 0 8px rgba(245,158,11,0.6));}
+.star-btn:hover{transform:scale(1.3) rotate(-5deg);}
+.rating-msg{font-size:14px;color:var(--muted2);min-height:22px;}
+
+/* ═══ PROFILE ═══ */
+.profile-hero{
+  background:linear-gradient(135deg,rgba(13,15,18,0.95) 0%,rgba(245,158,11,0.06) 100%);
+  border:1px solid var(--border);border-radius:22px;padding:28px;
+  margin-bottom:16px;position:relative;overflow:hidden;
+  animation:popIn 0.45s ease both;
+  box-shadow:0 20px 60px rgba(0,0,0,0.5),var(--glow-amber);
+}
+.profile-hero::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--amber),var(--cyan),transparent);
+}
+.profile-hero::after{
+  content:'';position:absolute;top:-60px;right:-60px;
+  width:180px;height:180px;border-radius:50%;
+  background:radial-gradient(circle,rgba(245,158,11,0.1) 0%,transparent 70%);
+  pointer-events:none;
+}
+.profile-top{display:flex;align-items:flex-start;gap:16px;margin-bottom:20px;}
+.profile-avatar{
+  width:76px;height:76px;border-radius:50%;
+  background:linear-gradient(135deg,var(--amber),var(--red),var(--purple));
+  display:flex;align-items:center;justify-content:center;
+  font-size:32px;flex-shrink:0;
+  box-shadow:0 8px 30px rgba(245,158,11,0.45),0 0 0 3px rgba(245,158,11,0.15);
+  border:3px solid rgba(245,158,11,0.3);position:relative;
+  animation:avatarPulse 4s ease-in-out infinite;
+}
+@keyframes avatarPulse{0%,100%{box-shadow:0 8px 30px rgba(245,158,11,0.45),0 0 0 3px rgba(245,158,11,0.15)}50%{box-shadow:0 8px 40px rgba(245,158,11,0.65),0 0 0 6px rgba(245,158,11,0.08)}}
+.online-dot{position:absolute;bottom:2px;right:2px;width:14px;height:14px;background:var(--green);border-radius:50%;border:2px solid var(--card);animation:pulse 2s infinite;box-shadow:0 0 8px rgba(16,185,129,0.6);}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,0.6)}50%{box-shadow:0 0 0 8px rgba(16,185,129,0)}}
+.profile-name{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:1px;line-height:1;
+  background:linear-gradient(135deg,var(--white),var(--amberL));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.profile-role{font-size:13px;color:var(--amber);font-weight:600;margin:4px 0;}
+.profile-location{font-size:13px;color:var(--muted2);display:flex;align-items:center;gap:4px;}
+.profile-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:var(--green);font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;margin-top:8px;box-shadow:0 0 12px rgba(16,185,129,0.1);}
+
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border-radius:14px;overflow:hidden;margin-bottom:16px;}
+.stat-box{background:var(--card);padding:14px 8px;text-align:center;transition:background 0.2s;}
+.stat-box:hover{background:rgba(245,158,11,0.05);}
+.stat-val{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--amber);letter-spacing:0.5px;text-shadow:0 0 20px rgba(245,158,11,0.3);}
+.stat-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-top:2px;}
+
+.profile-actions{display:flex;gap:10px;margin-bottom:16px;}
+.act-btn{flex:1;padding:12px;border-radius:11px;font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all 0.25s;border:none;display:flex;align-items:center;justify-content:center;gap:6px;}
+.act-primary{background:linear-gradient(135deg,var(--amber),var(--amberD));color:#000;box-shadow:0 4px 18px rgba(245,158,11,0.35);}
+.act-primary:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(245,158,11,0.5);}
+.act-secondary{background:var(--raised);color:var(--white);border:1.5px solid var(--border);}
+.act-secondary:hover{border-color:var(--cyan);color:var(--cyan);}
+
+.section-title{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.section-title::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent);}
+
+.skills-list{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;}
+.skill-pill{background:var(--raised);border:1.5px solid var(--border);color:var(--muted2);font-size:12px;font-weight:600;padding:6px 14px;border-radius:8px;transition:all 0.2s;cursor:default;}
+.skill-pill:hover{border-color:var(--amber);color:var(--amber);box-shadow:0 0 12px rgba(245,158,11,0.1);}
+.skill-pill.highlight{background:rgba(245,158,11,0.08);border-color:rgba(245,158,11,0.3);color:var(--amber);}
+
+.info-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);}
+.info-row:last-child{border-bottom:none;}
+.info-key{font-size:13px;color:var(--muted2);display:flex;align-items:center;gap:8px;}
+.info-val{font-size:13px;font-weight:600;}
+.info-val.mono{font-family:'JetBrains Mono',monospace;font-size:12px;}
+
+.booking-item{
+  background:linear-gradient(135deg,rgba(13,15,18,0.8),rgba(24,28,34,0.5));
+  border:1px solid var(--border);border-radius:11px;padding:12px 14px;
+  display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;
+  transition:all 0.2s;
+}
+.booking-item:hover{border-color:var(--amber);transform:translateX(3px);box-shadow:0 4px 16px rgba(245,158,11,0.08);}
+.bi-left{display:flex;align-items:center;gap:10px;}
+.bi-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.15);}
+.bi-svc{font-size:13px;font-weight:600;}
+.bi-date{font-size:11px;color:var(--muted);margin-top:1px;}
+.bi-amt{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--amber);letter-spacing:0.5px;text-shadow:0 0 12px rgba(245,158,11,0.3);}
+
+.logout-btn{
+  width:100%;padding:13px;
+  background:linear-gradient(135deg,rgba(239,68,68,0.08),rgba(239,68,68,0.04));
+  border:1.5px solid rgba(239,68,68,0.25);border-radius:13px;color:var(--red);
+  font-family:'Outfit',sans-serif;font-size:15px;font-weight:700;cursor:pointer;
+  transition:all 0.25s;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:4px;
+}
+.logout-btn:hover{background:rgba(239,68,68,0.15);border-color:rgba(239,68,68,0.45);box-shadow:0 0 24px rgba(239,68,68,0.15);}
+
+.reg-row{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--border);}
+.reg-row:last-child{border-bottom:none;}
+.reg-k{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;font-weight:600;}
+.reg-v{font-size:14px;font-weight:600;}
+
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+::-webkit-scrollbar-thumb:hover{background:var(--amber);}
+
+@media(max-width:440px){
+  .card{padding:22px;}.profile-hero{padding:20px;}
+  .services-grid{grid-template-columns:1fr;}
+}
+
+/* ═══════════════════════════════════════
+   REGISTRATION SUCCESS — WEBSITE STYLE
+═══════════════════════════════════════ */
+
+/* ── Confetti particles ── */
+.confetti-container{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:999;overflow:hidden;}
+.confetti-p{position:absolute;top:-10px;border-radius:2px;animation:confettiFall linear forwards;}
+@keyframes confettiFall{
+  0%{transform:translateY(0) rotate(0deg);opacity:1;}
+  100%{transform:translateY(105vh) rotate(720deg);opacity:0;}
+}
+
+/* ── Site Header ── */
+.site-header{
+  background:linear-gradient(135deg,rgba(7,8,10,0.95) 0%,rgba(13,15,18,0.95) 100%);
+  border:1px solid var(--border);border-radius:22px;
+  overflow:hidden;margin-bottom:14px;position:relative;
+  animation:popIn 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+.site-header::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--amber),var(--cyan),var(--purple),var(--pink),var(--green),var(--amber));
+  background-size:300% auto;animation:rainbowBar 4s linear infinite;
+}
+@keyframes rainbowBar{0%{background-position:0% center}100%{background-position:300% center}}
+
+.site-hero{
+  padding:36px 28px 28px;text-align:center;position:relative;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 0%,rgba(245,158,11,0.08) 0%,transparent 70%);
+}
+.site-hero-icon{
+  width:90px;height:90px;border-radius:50%;margin:0 auto 16px;
+  background:linear-gradient(135deg,var(--amber),var(--amberD),#c2410c);
+  display:flex;align-items:center;justify-content:center;font-size:40px;
+  box-shadow:0 0 0 4px rgba(245,158,11,0.15),0 0 0 8px rgba(245,158,11,0.06),0 16px 48px rgba(245,158,11,0.35);
+  animation:heroIconSpin 6s linear infinite;
+}
+@keyframes heroIconSpin{0%,100%{transform:rotate(0deg) scale(1)}25%{transform:rotate(-5deg) scale(1.05)}75%{transform:rotate(5deg) scale(1.05)}}
+.site-hero-name{
+  font-family:'Bebas Neue',sans-serif;font-size:38px;letter-spacing:2.5px;line-height:1;
+  background:linear-gradient(135deg,#fff 0%,var(--amberL) 50%,var(--amber) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  margin-bottom:4px;
+}
+.site-hero-type{
+  display:inline-flex;align-items:center;gap:6px;
+  background:linear-gradient(135deg,rgba(245,158,11,0.15),rgba(245,158,11,0.05));
+  border:1px solid rgba(245,158,11,0.3);color:var(--amberL);
+  font-size:12px;font-weight:700;padding:5px 16px;border-radius:20px;
+  margin-bottom:14px;letter-spacing:0.5px;
+  box-shadow:0 0 16px rgba(245,158,11,0.1);
+}
+.site-hero-location{font-size:13px;color:var(--muted2);margin-bottom:18px;}
+.site-reg-id{
+  font-family:'JetBrains Mono',monospace;font-size:11px;
+  background:rgba(7,8,10,0.8);border:1px solid var(--border2);
+  color:var(--cyan);padding:5px 14px;border-radius:8px;
+  display:inline-block;letter-spacing:1px;
+}
+
+/* ── Stats band ── */
+.site-stats{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  border-top:1px solid var(--border);
+}
+.site-stat{
+  padding:16px 12px;text-align:center;position:relative;
+  transition:background 0.2s;cursor:default;
+}
+.site-stat:not(:last-child)::after{
+  content:'';position:absolute;right:0;top:20%;height:60%;width:1px;background:var(--border);
+}
+.site-stat:hover{background:rgba(245,158,11,0.04);}
+.ss-val{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:0.5px;line-height:1;}
+.ss-lbl{font-size:9px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);margin-top:3px;}
+
+/* ── Section wrapper ── */
+.site-section{
+  background:linear-gradient(135deg,rgba(13,15,18,0.95),rgba(19,21,26,0.9));
+  border:1px solid var(--border);border-radius:18px;
+  padding:22px;margin-bottom:12px;position:relative;overflow:hidden;
+  animation:slideUp 0.5s ease both;
+}
+.site-section::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:linear-gradient(180deg,var(--amber),var(--amberD));
+  border-radius:0 0 0 18px;
+}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.site-section:nth-child(2){animation-delay:0.08s;}
+.site-section:nth-child(3){animation-delay:0.16s;}
+.site-section:nth-child(4){animation-delay:0.24s;}
+
+.ss-title{
+  font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;
+  color:var(--muted);margin-bottom:14px;display:flex;align-items:center;gap:8px;
+}
+.ss-title-icon{font-size:14px;}
+
+/* ── Info grid ── */
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.info-cell{
+  background:rgba(7,8,10,0.5);border:1px solid var(--border);border-radius:11px;
+  padding:11px 13px;transition:all 0.2s;
+}
+.info-cell:hover{border-color:var(--border2);background:rgba(245,158,11,0.03);}
+.info-cell.full{grid-column:1/-1;}
+.ic-label{font-size:9px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);margin-bottom:4px;}
+.ic-val{font-size:13px;font-weight:600;color:var(--white);}
+.ic-val.accent{color:var(--amber);}
+.ic-val.green{color:var(--green);}
+.ic-val.mono{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan);}
+
+/* ── Services website cards ── */
+.svc-cards-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.svc-card{
+  background:linear-gradient(135deg,rgba(7,8,10,0.7),rgba(19,21,26,0.5));
+  border:1.5px solid var(--border);border-radius:13px;
+  padding:13px 12px;position:relative;overflow:hidden;
+  transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);cursor:default;
+}
+.svc-card::before{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:2px;
+  opacity:0;transition:opacity 0.3s;
+}
+.svc-card:hover{transform:translateY(-3px) scale(1.02);border-color:var(--svc-color, var(--amber));box-shadow:0 8px 24px rgba(0,0,0,0.3),0 0 20px var(--svc-glow, rgba(245,158,11,0.1));}
+.svc-card:hover::before{opacity:1;background:var(--svc-color, var(--amber));}
+.svc-icon{font-size:26px;margin-bottom:8px;display:block;}
+.svc-name{font-size:12px;font-weight:700;color:var(--white);margin-bottom:3px;line-height:1.3;}
+.svc-tag{font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;display:inline-block;}
+.svc-tag.featured{background:rgba(245,158,11,0.15);color:var(--amber);border:1px solid rgba(245,158,11,0.25);}
+.svc-tag.standard{background:rgba(139,92,246,0.12);color:var(--purple);border:1px solid rgba(139,92,246,0.2);}
+.svc-tag.basic{background:rgba(59,130,246,0.12);color:var(--blue);border:1px solid rgba(59,130,246,0.2);}
+
+/* ── Map ── */
+.map-canvas-wrap{
+  border-radius:14px;overflow:hidden;border:1.5px solid var(--border);
+  position:relative;background:var(--surface);height:220px;
+}
+.map-svg-area{width:100%;height:100%;}
+.map-pin-pulse{animation:mapPulse 2s infinite;}
+@keyframes mapPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.7;transform:scale(1.2)}}
+.map-legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+.map-leg-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted2);font-weight:600;}
+.map-leg-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+
+/* ── CTA buttons ── */
+.cta-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.cta-btn{
+  padding:14px 10px;border:none;border-radius:13px;
+  font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;
+  cursor:pointer;transition:all 0.25s;display:flex;align-items:center;justify-content:center;gap:7px;
+}
+.cta-share{background:linear-gradient(135deg,var(--blue),var(--blueD));color:#fff;box-shadow:0 4px 16px rgba(59,130,246,0.3);}
+.cta-share:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(59,130,246,0.45);}
+.cta-copy{background:linear-gradient(135deg,var(--purple),var(--purpleD));color:#fff;box-shadow:0 4px 16px rgba(139,92,246,0.3);}
+.cta-copy:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(139,92,246,0.45);}
+</style>
+</head>
+<body>
+<canvas id="bg-canvas"></canvas>
+<div class="app">
+  <div class="logo-bar">
+    <div class="logo-icon">🔧</div>
+    <div>
+      <div class="logo-text">MECH<span>FINDER</span></div>
+      <div class="logo-tagline">India's Mechanic Network</div>
+    </div>
+  </div>
+  <div id="root"></div>
+</div>
+<script>
+const SERVICES_COST={"engine services":250,"oil services":50,"fluid services":70,"brake services":120,"transmission":300,"electrical system services":180,"suspension":220,"steering":160,"tire services":100,"cooling system services":140,"exhaust system service":130,"general services":90,"body services":200,"miscellaneous repairs":80};
+const MECHANICS_BIKE={"guntur":{name:"Ravan",phone:"845851xxxx"},"vijayawada":{name:"Kiran",phone:"756559xxxx"},"pedhakakani":{name:"Vijay",phone:"929565xxxx"},"kakani":{name:"Ravi",phone:"826545xxxx"},"namburu":{name:"Ajay",phone:"687454xxxx"},"mangalagiri":{name:"Vishnu",phone:"934851xxxx"}};
+const MECHANICS_OTHER={"guntur":{name:"Masthan",phone:"849851xxxx"},"vijayawada":{name:"Gambir",phone:"786559xxxx"},"pedhakakani":{name:"Arjun",phone:"929650xxxx"},"kakani":{name:"Praveen",phone:"826545xxxx"},"namburu":{name:"Pavan",phone:"687454xxxx"},"mangalagiri":{name:"Shekhar",phone:"987751xxxx"}};
+
+const REGISTERED_USERS={
+  "m.chandu":{pass:12,name:"M. Chandu",role:"Engine Specialist",location:"Guntur, AP",exp:"8 yrs",jobs:142,rating:4.8,phone:"845123xxxx",skills:["Engine Repair","Oil Service","Transmission","Suspension"],recent:[{svc:"Engine Overhaul",date:"22 Mar 2026",amt:1200,icon:"⚙️"},{svc:"Oil Change",date:"19 Mar 2026",amt:150,icon:"🛢️"},{svc:"Brake Service",date:"15 Mar 2026",amt:300,icon:"🔴"}]},
+  "m.venu":{pass:1245,name:"M. Venu",role:"Brake & Tyre Expert",location:"Vijayawada, AP",exp:"5 yrs",jobs:98,rating:4.6,phone:"786123xxxx",skills:["Brake Services","Tire Services","Steering","Suspension"],recent:[{svc:"Tyre Rotation",date:"21 Mar 2026",amt:200,icon:"🔵"},{svc:"Brake Pad Replacement",date:"18 Mar 2026",amt:450,icon:"🔴"}]},
+  "m.rakesh":{pass:8723,name:"M. Rakesh",role:"Electricals & AC",location:"Namburu, AP",exp:"10 yrs",jobs:207,rating:4.9,phone:"929123xxxx",skills:["Electrical System","AC Repair","Wiring","Battery"],recent:[{svc:"AC Gas Refill",date:"23 Mar 2026",amt:800,icon:"❄️"},{svc:"Electrical Fix",date:"20 Mar 2026",amt:350,icon:"⚡"},{svc:"Battery Replace",date:"14 Mar 2026",amt:250,icon:"🔋"}]},
+  "m.masthan":{pass:173,name:"M. Masthan",role:"General Mechanic",location:"Kakani, AP",exp:"6 yrs",jobs:76,rating:4.5,phone:"826123xxxx",skills:["General Services","Fluid Services","Body Work","Misc Repairs"],recent:[{svc:"Full Service",date:"22 Mar 2026",amt:500,icon:"🔧"}]},
+  "m.fayaz":{pass:284,name:"M. Fayaz",role:"Transmission Expert",location:"Pedhakakani, AP",exp:"12 yrs",jobs:315,rating:4.9,phone:"687123xxxx",skills:["Transmission","Gearbox","Clutch","Engine Services"],recent:[{svc:"Gearbox Repair",date:"23 Mar 2026",amt:1800,icon:"⚙️"},{svc:"Clutch Plate",date:"17 Mar 2026",amt:700,icon:"🔩"},{svc:"Engine Check",date:"11 Mar 2026",amt:200,icon:"🔎"}]}
+};
+
+let state={screen:'home',data:{}};
+let selectedServices={};
+let currentRating=0;
+
+function genId(){return"ID-"+Array.from({length:5},()=>Math.floor(Math.random()*10)).join('');}
+function checkPw(pw){return{len:pw.length>=8,lower:/[a-z]/.test(pw),upper:/[A-Z]/.test(pw),digit:/[0-9]/.test(pw)};}
+function cap(s){return s.replace(/\b\w/g,l=>l.toUpperCase());}
+function stars(r){return'★'.repeat(Math.floor(r))+'☆'.repeat(5-Math.floor(r));}
+
+function go(screen,data={}){
+  state={screen,data:{...state.data,...data}};
+  render();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function render(){
+  const s=screens[state.screen];
+  document.getElementById('root').innerHTML=typeof s==='function'?s():s;
+}
+
+function showAlert(id,msg,type){
+  const el=document.getElementById(id);
+  if(el){el.className=`alert ${type}`;el.textContent=(type==='error'?'⚠ ':'✓ ')+msg;}
+}
+
+const screens={
+home:`<div class="card">
+  <div class="card-title">Welcome to<br>MechFinder</div>
+  <div class="card-sub">India's trusted mechanic booking platform — fast, reliable, transparent.</div>
+  <div class="choice-grid">
+    <button class="choice-btn" onclick="go('user_login')">
+      <div class="choice-icon ci-orange">🙋</div>
+      <div><div class="choice-label">I Need a Mechanic</div><div class="choice-desc">Find & book services near you</div></div>
+    </button>
+    <button class="choice-btn" onclick="go('register_choice')">
+      <div class="choice-icon ci-green">🔧</div>
+      <div><div class="choice-label">I'm a Mechanic</div><div class="choice-desc">Login or register your services</div></div>
+    </button>
+  </div>
+</div>`,
+
+user_login:`<div class="card">
+  <button class="back-link" onclick="go('home')">← Back</button>
+  <div class="card-title">Create Account</div>
+  <div class="card-sub">Quick setup — no email needed</div>
+  <div id="al"></div>
+  <div class="form-group"><label>Your Name</label><input id="un" placeholder="e.g. Ravi Kumar" type="text"/></div>
+  <div class="form-group">
+    <label>Password</label>
+    <input id="up" type="password" placeholder="Min 8 chars · A–Z · a–z · 0–9" oninput="updateHints()"/>
+    <div class="pw-hints">
+      <span class="pw-hint" id="h1">≥ 8 chars</span>
+      <span class="pw-hint" id="h2">A–Z</span>
+      <span class="pw-hint" id="h3">a–z</span>
+      <span class="pw-hint" id="h4">0–9</span>
+    </div>
+  </div>
+  <button class="btn btn-primary" onclick="doUserLogin()">Continue →</button>
+</div>`,
+
+search_mode:()=>`<div class="card">
+  <button class="back-link" onclick="go('home')">← Home</button>
+  <div class="card-title">Hey, ${state.data.userName||'User'}! 👋</div>
+  <div class="card-sub">How would you like to find your mechanic?</div>
+  <div class="choice-grid">
+    <button class="choice-btn" onclick="go('select_vehicle')">
+      <div class="choice-icon ci-orange">🛠️</div>
+      <div><div class="choice-label">Book by Services</div><div class="choice-desc">Choose what you need & get a price</div></div>
+    </button>
+    <button class="choice-btn" onclick="go('direct_search')">
+      <div class="choice-icon ci-green">📍</div>
+      <div><div class="choice-label">Find Nearest Mechanic</div><div class="choice-desc">Search directly by your location</div></div>
+    </button>
+  </div>
+</div>`,
+
+select_vehicle:`<div class="card">
+  <button class="back-link" onclick="go('search_mode')">← Back</button>
+  <div class="card-title">Your Vehicle</div>
+  <div class="card-sub">Select vehicle type to match the right mechanic</div>
+  <div class="choice-grid">
+    <button class="choice-btn" onclick="go('pick_services',{vehicleType:'bike'})">
+      <div class="choice-icon ci-orange">🏍️</div>
+      <div><div class="choice-label">Bike / Scooty</div><div class="choice-desc">Two-wheelers</div></div>
+    </button>
+    <button class="choice-btn" onclick="go('pick_services',{vehicleType:'car'})">
+      <div class="choice-icon ci-blue">🚗</div>
+      <div><div class="choice-label">Car</div><div class="choice-desc">Hatchback, Sedan, SUV</div></div>
+    </button>
+    <button class="choice-btn" onclick="go('pick_services',{vehicleType:'auto'})">
+      <div class="choice-icon ci-purple">🛺</div>
+      <div><div class="choice-label">Auto / Other</div><div class="choice-desc">Three-wheelers, trucks</div></div>
+    </button>
+  </div>
+</div>`,
+
+pick_services:()=>`<div class="card">
+  <button class="back-link" onclick="go('select_vehicle')">← Back</button>
+  <div class="card-title">Choose Services</div>
+  <div class="card-sub">Tap to select — total updates live</div>
+  <div class="services-grid">
+    ${Object.entries(SERVICES_COST).map(([s,c])=>`
+      <div class="service-item" onclick="toggleSvc(this,'${s}',${c})">
+        <div class="svc-check">✓</div>
+        <div><div>${cap(s)}</div><span class="svc-price">₹${c}</span></div>
+      </div>`).join('')}
+  </div>
+  <div class="cost-bar" id="cb">
+    <span class="cost-label">Estimated Total</span>
+    <span class="cost-value" id="ct">₹0</span>
+  </div>
+  <div id="al"></div>
+  <button class="btn btn-primary" onclick="toAddr()">Choose Location →</button>
+</div>`,
+
+pick_address:()=>`<div class="card">
+  <button class="back-link" onclick="go('pick_services')">← Back</button>
+  <div class="card-title">Your Location</div>
+  <div class="card-sub">We'll assign the nearest available mechanic</div>
+  <div class="form-group"><label>City / Area</label>
+    <select id="as">
+      <option value="">-- Select location --</option>
+      ${Object.keys(MECHANICS_BIKE).map(a=>`<option value="${a}">${cap(a)}</option>`).join('')}
+    </select>
+  </div>
+  <div id="al"></div>
+  <button class="btn btn-primary" onclick="doBook()">Confirm Booking →</button>
+</div>`,
+
+direct_search:`<div class="card">
+  <button class="back-link" onclick="go('search_mode')">← Back</button>
+  <div class="card-title">Find Mechanic</div>
+  <div class="card-sub">Locate the nearest mechanic to your area</div>
+  <div class="form-group"><label>Your Location</label>
+    <select id="as">
+      <option value="">-- Select location --</option>
+      ${Object.keys(MECHANICS_OTHER).map(a=>`<option value="${a}">${cap(a)}</option>`).join('')}
+    </select>
+  </div>
+  <div id="al"></div>
+  <button class="btn btn-primary" onclick="doDirect()">Find →</button>
+</div>`,
+
+booking_result:()=>{const d=state.data,m=d.mechanic;return`<div class="card">
+  <div class="card-title">Booking Confirmed! 🎉</div>
+  <div class="card-sub">Your mechanic will contact you shortly</div>
+  <span class="booking-id">${d.bookingId}</span>
+  <div class="result-block success-block">
+    <div class="rb-label">Services</div>
+    <div class="chip-list">${(d.selectedServices||[]).map(s=>`<span class="chip">${cap(s)}</span>`).join('')}</div>
+    <div class="rb-label">Total Amount</div>
+    <div class="amount-display">₹${d.totalCost}</div>
+    <div class="mechanic-row">
+      <div class="mech-av">🔧</div>
+      <div><div class="mech-nm">${m.name}</div><div class="mech-ph">📞 ${m.phone}</div></div>
+    </div>
+  </div>
+  <button class="btn btn-primary" onclick="go('rating')">Rate MechFinder ⭐</button>
+  <button class="btn btn-ghost" onclick="go('home')">Back to Home</button>
+</div>`},
+
+direct_result:()=>{const d=state.data,m=d.mechanic;return`<div class="card">
+  <div class="card-title">Mechanic Found! 📍</div>
+  <div class="card-sub">Your nearest available mechanic</div>
+  <span class="booking-id">${d.bookingId}</span>
+  <div class="result-block success-block">
+    <div class="mechanic-row" style="padding:0;margin:0;border:none;">
+      <div class="mech-av">🔧</div>
+      <div><div class="mech-nm">${m.name}</div><div class="mech-ph">📞 ${m.phone}</div></div>
+    </div>
+  </div>
+  <button class="btn btn-primary" onclick="go('rating')">Rate MechFinder ⭐</button>
+  <button class="btn btn-ghost" onclick="go('home')">Back to Home</button>
+</div>`},
+
+rating:`<div class="card">
+  <div class="card-title">Rate MechFinder</div>
+  <div class="card-sub">How was your experience today?</div>
+  <div class="stars-row">
+    ${[1,2,3,4,5].map(i=>`<button class="star-btn" data-v="${i}" onclick="setRating(${i})">★</button>`).join('')}
+  </div>
+  <div class="rating-msg" id="rmsg"></div>
+  <div id="al" style="margin-top:14px;"></div>
+  <button class="btn btn-primary" style="margin-top:18px" onclick="submitRating()">Submit Rating</button>
+  <button class="btn btn-ghost" onclick="go('home')">Skip</button>
+</div>`,
+
+register_choice:`<div class="card">
+  <button class="back-link" onclick="go('home')">← Back</button>
+  <div class="card-title">Mechanic Portal</div>
+  <div class="card-sub">Login or register to list your services</div>
+  <div class="choice-grid">
+    <button class="choice-btn" onclick="go('mech_login')">
+      <div class="choice-icon ci-orange">🔐</div>
+      <div><div class="choice-label">Login to My Account</div><div class="choice-desc">View your mechanic profile & bookings</div></div>
+    </button>
+    <button class="choice-btn" onclick="go('new_reg')">
+      <div class="choice-icon ci-green">🆕</div>
+      <div><div class="choice-label">New Registration</div><div class="choice-desc">Join the MechFinder network</div></div>
+    </button>
+  </div>
+</div>`,
+
+mech_login:`<div class="card">
+  <button class="back-link" onclick="go('register_choice')">← Back</button>
+  <div class="card-title">Mechanic Login</div>
+  <div class="card-sub">Access your profile and booking history</div>
+  <div id="al"></div>
+  <div class="form-group"><label>Username</label><input id="mu" placeholder="e.g. m.chandu" type="text"/></div>
+  <div class="form-group"><label>Password</label><input id="mp" placeholder="Numeric password" type="password"/></div>
+  <div style="background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.15);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:12px;color:var(--muted2);">
+    <b style="color:var(--accent);">Demo Accounts:</b><br>
+    m.chandu / 12 &nbsp;·&nbsp; m.venu / 1245 &nbsp;·&nbsp; m.rakesh / 8723<br>
+    m.masthan / 173 &nbsp;·&nbsp; m.fayaz / 284
+  </div>
+  <button class="btn btn-primary" onclick="doMechLogin()">Login & View Profile →</button>
+</div>`,
+
+mech_profile:()=>{
+  const u=state.data.mechProfile;
+  return`
+  <div class="profile-hero">
+    <div class="profile-top">
+      <div class="profile-avatar">🔧<div class="online-dot"></div></div>
+      <div>
+        <div class="profile-name">${u.name}</div>
+        <div class="profile-role">${u.role}</div>
+        <div class="profile-location">📍 ${u.location}</div>
+        <div class="profile-badge">✅ Verified Pro · ${u.exp} experience</div>
+      </div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-box"><div class="stat-val">${u.jobs}+</div><div class="stat-lbl">Jobs Done</div></div>
+      <div class="stat-box"><div class="stat-val">${u.rating}</div><div class="stat-lbl">Rating</div></div>
+      <div class="stat-box"><div class="stat-val">${u.exp.replace(' yrs','')}</div><div class="stat-lbl">Yrs Exp</div></div>
+    </div>
+    <div class="profile-actions">
+      <button class="act-btn act-primary">📅 View Schedule</button>
+      <button class="act-btn act-secondary">📞 ${u.phone}</button>
+    </div>
+  </div>
+  <div class="card" style="margin-bottom:0;">
+    <div class="section-title">Specialisations</div>
+    <div class="skills-list">
+      ${u.skills.map((s,i)=>`<span class="skill-pill ${i<2?'highlight':''}">${s}</span>`).join('')}
+    </div>
+    <div class="section-title">Account Info</div>
+    <div style="margin-bottom:18px">
+      <div class="info-row"><span class="info-key">📱 Phone</span><span class="info-val mono">${u.phone}</span></div>
+      <div class="info-row"><span class="info-key">📍 Location</span><span class="info-val">${u.location}</span></div>
+      <div class="info-row"><span class="info-key">⭐ Rating</span><span class="info-val">${stars(u.rating)} ${u.rating}</span></div>
+      <div class="info-row"><span class="info-key">🟢 Status</span><span class="info-val" style="color:var(--green)">Available Now</span></div>
+    </div>
+    <div class="section-title">Recent Bookings</div>
+    <div style="margin-bottom:18px">
+      ${u.recent.map(b=>`
+        <div class="booking-item">
+          <div class="bi-left">
+            <div class="bi-icon">${b.icon}</div>
+            <div><div class="bi-svc">${b.svc}</div><div class="bi-date">${b.date}</div></div>
+          </div>
+          <div class="bi-amt">₹${b.amt}</div>
+        </div>`).join('')}
+    </div>
+    <button class="logout-btn" onclick="go('home')">🚪 Logout</button>
+  </div>`
+},
+
+new_reg:`<div class="card">
+  <button class="back-link" onclick="go('register_choice')">← Back</button>
+  <div class="card-title">New Registration</div>
+  <div class="card-sub">Register yourself on MechFinder</div>
+  <div id="al"></div>
+  <div class="form-group"><label>Full Name</label><input id="nn" type="text" placeholder="Your full name"/></div>
+  <div class="form-group"><label>Address / Area</label><input id="na" type="text" placeholder="Your location"/></div>
+  <div class="form-group"><label>Phone (10 digits)</label><input id="np" type="tel" maxlength="10" placeholder="9876543210"/></div>
+  <button class="btn btn-primary" onclick="doCheckPhone()">Next: Choose Type →</button>
+</div>`,
+
+mechanic_type:`<div class="card">
+  <button class="back-link" onclick="go('new_reg')">← Back</button>
+  <div class="card-title">Mechanic Type</div>
+  <div class="card-sub">How do you offer your services?</div>
+  <div class="choice-grid">
+    <button class="choice-btn" onclick="go('shop_reg')">
+      <div class="choice-icon ci-orange">🏪</div>
+      <div><div class="choice-label">Shop Owner</div><div class="choice-desc">Own a registered mechanic shop</div></div>
+    </button>
+    <button class="choice-btn" onclick="go('company_reg')">
+      <div class="choice-icon ci-blue">🏢</div>
+      <div><div class="choice-label">Company Agent</div><div class="choice-desc">Work for an auto service company</div></div>
+    </button>
+    <button class="choice-btn" onclick="go('freelancer_reg')">
+      <div class="choice-icon ci-green">👷</div>
+      <div><div class="choice-label">Freelance Mechanic</div><div class="choice-desc">Independent / self-employed</div></div>
+    </button>
+  </div>
+</div>`,
+
+shop_reg:`<div class="card">
+  <button class="back-link" onclick="go('mechanic_type')">← Back</button>
+  <div class="card-title">Shop Registration</div>
+  <div class="card-sub">License: 16 chars — last 10 must be digits</div>
+  <div id="al"></div>
+  <div class="form-group"><label>Shop Address</label><input id="sa" type="text" placeholder="Full shop address"/></div>
+  <div class="form-group"><label>License Number</label><input id="sl" type="text" maxlength="16" placeholder="XXXXXX0123456789"/></div>
+  <button class="btn btn-primary" onclick="doShopReg()">Register →</button>
+</div>`,
+
+company_reg:`<div class="card">
+  <button class="back-link" onclick="go('mechanic_type')">← Back</button>
+  <div class="card-title">Company Registration</div>
+  <div class="card-sub">Link your company profile to MechFinder</div>
+  <div id="al"></div>
+  <div class="form-group"><label>Company Address</label><input id="ca" type="text" placeholder="Company location"/></div>
+  <div class="form-group"><label>Company ID</label><input id="ci" type="text" placeholder="e.g. EMP-1234"/></div>
+  <div class="form-group"><label>Secondary Phone</label><input id="cp" type="tel" maxlength="10" placeholder="9876543210"/></div>
+  <button class="btn btn-primary" onclick="doCompanyReg()">Register →</button>
+</div>`,
+
+freelancer_reg:`<div class="card">
+  <button class="back-link" onclick="go('mechanic_type')">← Back</button>
+  <div class="card-title">Freelance Registration</div>
+  <div class="card-sub">Tell customers what you specialise in</div>
+  <div id="al"></div>
+  <div class="form-group"><label>Service You Offer</label><input id="fs" type="text" placeholder="e.g. Engine Repair, Oil Change"/></div>
+  <div class="form-group"><label>Your Rate (₹)</label><input id="fa" type="number" placeholder="e.g. 300"/></div>
+  <button class="btn btn-primary" onclick="doFreelancerReg()">Register →</button>
+</div>`,
+
+reg_success:()=>{
+  const d=state.data.regDetails||{};
+  const type=d.Type||'Mechanic';
+  const regId='MF-'+Math.floor(10000+Math.random()*90000);
+
+  const typeData={
+    'Shop Owner':{
+      icon:'🏪',color:'amber',
+      services:[
+        {icon:'⚙️',name:'Engine Repair & Overhaul',tag:'featured'},
+        {icon:'🛢️',name:'Oil & Fluid Services',tag:'featured'},
+        {icon:'🔴',name:'Brake & Disc Service',tag:'featured'},
+        {icon:'🔵',name:'Tyre Fitting & Balancing',tag:'standard'},
+        {icon:'⚡',name:'Electrical Diagnostics',tag:'standard'},
+        {icon:'❄️',name:'AC Repair & Gas Refill',tag:'standard'},
+        {icon:'🛡️',name:'Body Work & Denting',tag:'basic'},
+        {icon:'🔧',name:'General Maintenance',tag:'basic'},
+      ],
+      stats:[{val:'Open',lbl:'Status',color:'#10b981'},{val:'8–20',lbl:'Hours',color:'#f59e0b'},{val:'7',lbl:'Days',color:'#3b82f6'}]
+    },
+    'Company Agent':{
+      icon:'🏢',color:'blue',
+      services:[
+        {icon:'🚗',name:'Full Vehicle Service',tag:'featured'},
+        {icon:'🎨',name:'Denting & Painting',tag:'featured'},
+        {icon:'🔍',name:'Vehicle Diagnostics',tag:'featured'},
+        {icon:'📋',name:'Insurance Processing',tag:'standard'},
+        {icon:'🚚',name:'Fleet Management',tag:'standard'},
+        {icon:'❄️',name:'AC Service & Repair',tag:'basic'},
+      ],
+      stats:[{val:'B2B',lbl:'Mode',color:'#3b82f6'},{val:'24/7',lbl:'Support',color:'#10b981'},{val:'Pro',lbl:'Tier',color:'#8b5cf6'}]
+    },
+    'Freelance Mechanic':{
+      icon:'👷',color:'green',
+      services:[
+        {icon:'🔧',name:d.Service||'General Repair',tag:'featured'},
+        {icon:'🏍️',name:'Two-Wheeler Service',tag:'standard'},
+        {icon:'🛢️',name:'Quick Oil Change',tag:'standard'},
+        {icon:'📞',name:'On-Call Assistance',tag:'basic'},
+      ],
+      stats:[{val:'Mobile',lbl:'Service',color:'#10b981'},{val:d.Rate||'₹—',lbl:'Rate',color:'#f59e0b'},{val:'Flex',lbl:'Hours',color:'#8b5cf6'}]
+    }
+  };
+  const td=typeData[type]||typeData['Freelance Mechanic'];
+
+  const locations={
+    'guntur':{x:310,y:190,label:'Guntur'},'vijayawada':{x:255,y:138,label:'Vijayawada'},
+    'pedhakakani':{x:330,y:215,label:'Pedhakakani'},'kakani':{x:282,y:162,label:'Kakani'},
+    'namburu':{x:294,y:178,label:'Namburu'},'mangalagiri':{x:268,y:150,label:'Mangalagiri'}
+  };
+  const userLocRaw=(d.Location||d['Shop Address']||d['Company Address']||'').toLowerCase();
+  const locKey=Object.keys(locations).find(k=>userLocRaw.includes(k))||'guntur';
+  const pin=locations[locKey];
+  const otherLocs=Object.entries(locations).filter(([k])=>k!==locKey);
+
+  setTimeout(()=>spawnConfetti(),50);
+
+  return`
+<div id="conf-wrap" class="confetti-container"></div>
+<div style="animation:popIn 0.5s ease both;">
+
+  <!-- ═══ SITE HEADER ═══ -->
+  <div class="site-header">
+    <div class="site-hero">
+      <div class="site-hero-icon">${td.icon}</div>
+      <div class="site-hero-name">${d.Name||'Mechanic'}</div>
+      <div class="site-hero-type">✅ ${type} · MechFinder Verified</div>
+      <div class="site-hero-location">📍 ${d.Location||d['Shop Address']||d['Company Address']||'India'}</div>
+      <div class="site-reg-id">ID: ${regId}</div>
+    </div>
+    <div class="site-stats">
+      ${td.stats.map(s=>`
+        <div class="site-stat">
+          <div class="ss-val" style="color:${s.color};text-shadow:0 0 16px ${s.color}44;">${s.val}</div>
+          <div class="ss-lbl">${s.lbl}</div>
+        </div>`).join('')}
+    </div>
+  </div>
+
+  <!-- ═══ ACCOUNT INFO ═══ -->
+  <div class="site-section">
+    <div class="ss-title"><span class="ss-title-icon">👤</span>Account Details</div>
+    <div class="info-grid">
+      ${Object.entries(d).filter(([k])=>k!=='Type').map(([k,v],i)=>`
+        <div class="info-cell ${i===0?'full':''}">
+          <div class="ic-label">${k}</div>
+          <div class="ic-val ${k==='License'||k==='Company ID'?'mono':k==='Phone'||k==='Secondary Phone'?'accent':''}">${v}</div>
+        </div>`).join('')}
+      <div class="info-cell">
+        <div class="ic-label">Status</div>
+        <div class="ic-val green">🟢 Active</div>
+      </div>
+      <div class="info-cell">
+        <div class="ic-label">Member Since</div>
+        <div class="ic-val">Mar 2026</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SERVICES ═══ -->
+  <div class="site-section">
+    <div class="ss-title"><span class="ss-title-icon">🛠️</span>Services Offered</div>
+    <div class="svc-cards-grid">
+      ${td.services.map(s=>`
+        <div class="svc-card">
+          <span class="svc-icon">${s.icon}</span>
+          <div class="svc-name">${s.name}</div>
+          <span class="svc-tag ${s.tag}">${s.tag==='featured'?'⭐ Top Service':s.tag==='standard'?'🔵 Available':'🔧 On Request'}</span>
+        </div>`).join('')}
+    </div>
+  </div>
+
+  <!-- ═══ SERVICE AREA MAP ═══ -->
+  <div class="site-section">
+    <div class="ss-title"><span class="ss-title-icon">🗺️</span>Service Area</div>
+    <div class="map-canvas-wrap">
+      <svg class="map-svg-area" viewBox="0 0 420 280" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <pattern id="mgrid" width="30" height="30" patternUnits="userSpaceOnUse">
+            <path d="M 30 0 L 0 0 0 30" fill="none" stroke="rgba(245,158,11,0.05)" stroke-width="0.8"/>
+          </pattern>
+          <radialGradient id="covGrad" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="rgba(245,158,11,0.2)"/>
+            <stop offset="100%" stop-color="rgba(245,158,11,0)"/>
+          </radialGradient>
+          <radialGradient id="bgGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="rgba(245,158,11,0.03)"/>
+            <stop offset="100%" stop-color="transparent"/>
+          </radialGradient>
+        </defs>
+        <rect width="420" height="280" fill="#0f1114"/>
+        <rect width="420" height="280" fill="url(#mgrid)"/>
+        <rect width="420" height="280" fill="url(#bgGlow)"/>
+
+        <!-- Roads -->
+        <path d="M 50 145 Q 190 95 360 155" stroke="rgba(245,158,11,0.1)" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <path d="M 50 145 Q 190 95 360 155" stroke="rgba(245,158,11,0.2)" stroke-width="2" fill="none" stroke-linecap="round" stroke-dasharray="12 6"/>
+        <path d="M 70 210 Q 210 248 390 195" stroke="rgba(59,130,246,0.1)" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <path d="M 205 30 Q 248 125 265 260" stroke="rgba(16,185,129,0.08)" stroke-width="4" fill="none" stroke-linecap="round"/>
+
+        <!-- Coverage area -->
+        <circle cx="${pin.x}" cy="${pin.y}" r="70" fill="url(#covGrad)"/>
+        <circle cx="${pin.x}" cy="${pin.y}" r="70" fill="none" stroke="rgba(245,158,11,0.2)" stroke-width="1.5" stroke-dasharray="8 5"/>
+        <circle cx="${pin.x}" cy="${pin.y}" r="40" fill="rgba(245,158,11,0.04)" stroke="rgba(245,158,11,0.12)" stroke-width="1"/>
+
+        <!-- Other locations -->
+        ${otherLocs.map(([k,p])=>`
+          <circle cx="${p.x}" cy="${p.y}" r="5" fill="rgba(59,130,246,0.65)" stroke="rgba(59,130,246,0.25)" stroke-width="2"/>
+          <circle cx="${p.x}" cy="${p.y}" r="10" fill="rgba(59,130,246,0.08)" stroke="none"/>
+          <text x="${p.x+10}" y="${p.y+4}" fill="rgba(156,163,175,0.75)" font-size="8" font-family="Outfit,sans-serif" font-weight="600">${p.label}</text>
+        `).join('')}
+
+        <!-- User pin -->
+        <circle class="map-pin-pulse" cx="${pin.x}" cy="${pin.y}" r="22" fill="rgba(245,158,11,0.12)"/>
+        <circle cx="${pin.x}" cy="${pin.y}" r="13" fill="#f59e0b" stroke="#fcd34d" stroke-width="3" style="filter:drop-shadow(0 0 8px rgba(245,158,11,0.8))"/>
+        <text x="${pin.x}" y="${pin.y+5}" text-anchor="middle" font-size="11" fill="#000">🔧</text>
+        <text x="${pin.x}" y="${pin.y+30}" text-anchor="middle" fill="#f59e0b" font-size="9" font-family="Outfit,sans-serif" font-weight="700" style="filter:drop-shadow(0 1px 3px rgba(0,0,0,0.8))">${pin.label}</text>
+
+        <!-- Discoverable badge -->
+        <rect x="8" y="8" width="122" height="24" rx="7" fill="rgba(16,185,129,0.14)" stroke="rgba(16,185,129,0.35)" stroke-width="1"/>
+        <text x="17" y="24" fill="#10b981" font-size="10" font-family="Outfit,sans-serif" font-weight="700">✅ Live &amp; Discoverable</text>
+
+        <!-- Distance rings label -->
+        <text x="${pin.x+42}" y="${pin.y-46}" fill="rgba(245,158,11,0.5)" font-size="7" font-family="Outfit,sans-serif">~5 km radius</text>
+      </svg>
+    </div>
+    <div class="map-legend" style="margin-top:10px;">
+      <div class="map-leg-item"><div class="map-leg-dot" style="background:#f59e0b;box-shadow:0 0 6px rgba(245,158,11,0.5);"></div>Your Location</div>
+      <div class="map-leg-item"><div class="map-leg-dot" style="background:rgba(245,158,11,0.15);border:1px dashed #f59e0b;"></div>Coverage Area</div>
+      <div class="map-leg-item"><div class="map-leg-dot" style="background:#3b82f6;"></div>Other Mechanics</div>
+    </div>
+  </div>
+
+  <!-- ═══ CTA ═══ -->
+  <div class="cta-row">
+    <button class="cta-btn cta-share" onclick="alert('Share feature coming soon! 🚀')">🔗 Share Profile</button>
+    <button class="cta-btn cta-copy" onclick="navigator.clipboard&&navigator.clipboard.writeText('${regId}');this.textContent='✓ Copied!'">📋 Copy ID</button>
+  </div>
+  <button class="btn btn-primary" onclick="go('home')">🏠 Go to Home →</button>
+</div>`;
+}
+};
+
+// LOGIC
+function updateHints(){
+  const pw=document.getElementById('up')?.value||'';
+  const c=checkPw(pw);
+  document.getElementById('h1')?.classList.toggle('ok',c.len);
+  document.getElementById('h2')?.classList.toggle('ok',c.upper);
+  document.getElementById('h3')?.classList.toggle('ok',c.lower);
+  document.getElementById('h4')?.classList.toggle('ok',c.digit);
+}
+function doUserLogin(){
+  const n=document.getElementById('un').value.trim();
+  const pw=document.getElementById('up').value;
+  const c=checkPw(pw);
+  if(!n){showAlert('al','Please enter your name.','error');return;}
+  if(!(c.len&&c.lower&&c.upper&&c.digit)){showAlert('al','Password does not meet requirements.','error');return;}
+  go('search_mode',{userName:n});
+}
+function doMechLogin(){
+  const u=document.getElementById('mu').value.trim().toLowerCase();
+  const p=parseInt(document.getElementById('mp').value);
+  const profile=REGISTERED_USERS[u];
+  if(profile&&profile.pass===p){go('mech_profile',{mechProfile:profile});}
+  else{showAlert('al','Invalid username or password.','error');}
+}
+function toggleSvc(el,svc,cost){
+  if(selectedServices[svc]){delete selectedServices[svc];el.classList.remove('selected');}
+  else{selectedServices[svc]=cost;el.classList.add('selected');}
+  const total=Object.values(selectedServices).reduce((a,b)=>a+b,0);
+  const cb=document.getElementById('cb'),ct=document.getElementById('ct');
+  if(cb)cb.classList.toggle('show',total>0);
+  if(ct)ct.textContent='₹'+total;
+}
+function toAddr(){
+  if(!Object.keys(selectedServices).length){showAlert('al','Select at least one service.','error');return;}
+  state.data.selectedServices=Object.keys(selectedServices);
+  state.data.totalCost=Object.values(selectedServices).reduce((a,b)=>a+b,0);
+  selectedServices={};
+  go('pick_address');
+}
+function doBook(){
+  const addr=document.getElementById('as').value;
+  if(!addr){showAlert('al','Please select your location.','error');return;}
+  const vt=state.data.vehicleType;
+  const db=(vt==='bike'||vt==='scooty'||vt==='car')?MECHANICS_BIKE:MECHANICS_OTHER;
+  const m=db[addr];
+  if(!m){showAlert('al','No mechanic available in that area.','error');return;}
+  go('booking_result',{mechanic:m,bookingId:genId()});
+}
+function doDirect(){
+  const addr=document.getElementById('as').value;
+  if(!addr){showAlert('al','Please select your location.','error');return;}
+  const m=MECHANICS_OTHER[addr];
+  if(!m){showAlert('al','No mechanic in that area.','error');return;}
+  go('direct_result',{mechanic:m,bookingId:genId()});
+}
+function doCheckPhone(){
+  const n=document.getElementById('nn').value.trim();
+  const a=document.getElementById('na').value.trim();
+  const p=document.getElementById('np').value.trim();
+  if(!n||!a){showAlert('al','Fill all fields.','error');return;}
+  if(p.length!==10||isNaN(p)){showAlert('al','Enter a valid 10-digit phone number.','error');return;}
+  go('mechanic_type',{newName:n,newAddr:a,newPhone:p});
+}
+function doShopReg(){
+  const a=document.getElementById('sa').value.trim();
+  const l=document.getElementById('sl').value.trim();
+  if(!a||!l){showAlert('al','Fill all fields.','error');return;}
+  if(l.length!==16){showAlert('al','License must be exactly 16 characters.','error');return;}
+  if(!/^\d+$/.test(l.slice(6))){showAlert('al','Last 10 characters must be digits.','error');return;}
+  go('reg_success',{regDetails:{Name:state.data.newName,Location:state.data.newAddr,Phone:state.data.newPhone,'Shop Address':a,License:l,Type:'Shop Owner'}});
+}
+function doCompanyReg(){
+  const a=document.getElementById('ca').value.trim();
+  const i=document.getElementById('ci').value.trim();
+  const p=document.getElementById('cp').value.trim();
+  if(!a||!i){showAlert('al','Fill all fields.','error');return;}
+  if(p.length!==10||isNaN(p)){showAlert('al','Valid 10-digit secondary phone required.','error');return;}
+  go('reg_success',{regDetails:{Name:state.data.newName,Location:state.data.newAddr,Phone:state.data.newPhone,'Company Address':a,'Company ID':i,'Secondary Phone':p,Type:'Company Agent'}});
+}
+function doFreelancerReg(){
+  const s=document.getElementById('fs').value.trim();
+  const a=document.getElementById('fa').value.trim();
+  if(!s||!a){showAlert('al','Fill all fields.','error');return;}
+  go('reg_success',{regDetails:{Name:state.data.newName,Location:state.data.newAddr,Phone:state.data.newPhone,Service:s,Rate:'₹'+a,Type:'Freelance Mechanic'}});
+}
+function setRating(v){
+  currentRating=v;
+  document.querySelectorAll('.star-btn').forEach(b=>b.classList.toggle('lit',+b.dataset.v<=v));
+  const msgs=['','Needs work 😕','Could be better 🙂','Good! 👍','Great app! 😊','Absolutely love it! 🔥'];
+  const el=document.getElementById('rmsg');if(el)el.textContent=msgs[v]||'';
+}
+function submitRating(){
+  if(!currentRating){showAlert('al','Please give a rating.','error');return;}
+  showAlert('al',`Thanks for rating us ${currentRating}/5! 🎉`,'success');
+  setTimeout(()=>go('home'),1600);
+}
+
+function spawnConfetti(){
+  const wrap=document.getElementById('conf-wrap');
+  if(!wrap)return;
+  const colors=['#f59e0b','#10b981','#3b82f6','#8b5cf6','#ec4899','#06b6d4','#ef4444','#fcd34d'];
+  for(let i=0;i<60;i++){
+    const p=document.createElement('div');
+    p.className='confetti-p';
+    const size=(Math.random()*8+4)+'px';
+    p.style.cssText=`left:${Math.random()*100}%;width:${size};height:${size};background:${colors[Math.floor(Math.random()*colors.length)]};animation-duration:${Math.random()*2+1.5}s;animation-delay:${Math.random()*0.8}s;border-radius:${Math.random()>0.5?'50%':'2px'};opacity:${0.6+Math.random()*0.4};`;
+    wrap.appendChild(p);
+  }
+  setTimeout(()=>wrap&&wrap.parentNode&&wrap.parentNode.removeChild(wrap),4000);
+}
+
+(function(){
+  const canvas=document.getElementById('bg-canvas');
+  if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  let W,H;
+  const particles=[];
+  function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight;}
+  resize();window.addEventListener('resize',resize);
+  for(let i=0;i<55;i++){
+    particles.push({
+      x:Math.random()*window.innerWidth,y:Math.random()*window.innerHeight,
+      r:Math.random()*2+0.5,
+      vx:(Math.random()-0.5)*0.3,vy:(Math.random()-0.5)*0.3,
+      color:['rgba(245,158,11,','rgba(16,185,129,','rgba(59,130,246,','rgba(139,92,246,','rgba(6,182,212,'][Math.floor(Math.random()*5)],
+      a:Math.random()*0.22+0.05
+    });
+  }
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    particles.forEach(p=>{
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle=p.color+p.a+')';ctx.fill();
+      p.x+=p.vx;p.y+=p.vy;
+      if(p.x<0)p.x=W;if(p.x>W)p.x=0;
+      if(p.y<0)p.y=H;if(p.y>H)p.y=0;
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+render();
+</script>
+</body>
+</html>
