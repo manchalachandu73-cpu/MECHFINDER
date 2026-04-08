@@ -526,6 +526,11 @@ body::after{
 const SERVICES_COST={"engine services":250,"oil services":50,"fluid services":70,"brake services":120,"transmission":300,"electrical system services":180,"suspension":220,"steering":160,"tire services":100,"cooling system services":140,"exhaust system service":130,"general services":90,"body services":200,"miscellaneous repairs":80};
 const MECHANICS_BIKE={"guntur":{name:"Ravan",phone:"845851xxxx"},"vijayawada":{name:"Kiran",phone:"756559xxxx"},"pedhakakani":{name:"Vijay",phone:"929565xxxx"},"kakani":{name:"Ravi",phone:"826545xxxx"},"namburu":{name:"Ajay",phone:"687454xxxx"},"mangalagiri":{name:"Vishnu",phone:"934851xxxx"}};
 const MECHANICS_OTHER={"guntur":{name:"Masthan",phone:"849851xxxx"},"vijayawada":{name:"Gambir",phone:"786559xxxx"},"pedhakakani":{name:"Arjun",phone:"929650xxxx"},"kakani":{name:"Praveen",phone:"826545xxxx"},"namburu":{name:"Pavan",phone:"687454xxxx"},"mangalagiri":{name:"Shekhar",phone:"987751xxxx"}};
+const MECHANICS_NH_MANGALAGIRI=[
+  {name:"Suresh NH Works",phone:"934500xxxx",specialty:"Highway Breakdowns & Towing",rating:4.8,tag:"🛣️ NH 16 — Near Toll Plaza"},
+  {name:"Raju Road Rescue",phone:"876543xxxx",specialty:"Tyre Puncture & Emergency Repair",rating:4.7,tag:"🛣️ NH 16 — Mangalagiri Bypass"},
+  {name:"Krishna Auto Care",phone:"912345xxxx",specialty:"Engine & Electrical Highway Service",rating:4.9,tag:"🛣️ NH 65 — Vijayawada Exit"},
+];
 
 const REGISTERED_USERS={
   "m.chandu":{pass:12,name:"M. Chandu",role:"Engine Specialist",location:"Guntur, AP",exp:"8 yrs",jobs:142,rating:4.8,phone:"845123xxxx",skills:["Engine Repair","Oil Service","Transmission","Suspension"],recent:[{svc:"Engine Overhaul",date:"22 Mar 2026",amt:1200,icon:"⚙️"},{svc:"Oil Change",date:"19 Mar 2026",amt:150,icon:"🛢️"},{svc:"Brake Service",date:"15 Mar 2026",amt:300,icon:"🔴"}]},
@@ -562,18 +567,31 @@ function showAlert(id,msg,type){
 
 const screens={
 home:`<div class="card">
-  <div class="card-title">Welcome to<br>MechFinder</div>
-  <div class="card-sub">India's trusted mechanic booking platform — fast, reliable, transparent.</div>
-  <div class="choice-grid">
-    <button class="choice-btn" onclick="go('user_login')">
-      <div class="choice-icon ci-orange">🙋</div>
-      <div><div class="choice-label">I Need a Mechanic</div><div class="choice-desc">Find & book services near you</div></div>
-    </button>
-    <button class="choice-btn" onclick="go('register_choice')">
-      <div class="choice-icon ci-green">🔧</div>
-      <div><div class="choice-label">I'm a Mechanic</div><div class="choice-desc">Login or register your services</div></div>
-    </button>
+  <div style="text-align:center;margin-bottom:22px;">
+    <div style="font-size:56px;margin-bottom:10px;animation:logoFloat 3s ease-in-out infinite;display:inline-block;">🔧</div>
+    <div class="card-title" style="font-size:42px;text-align:center;">MechFinder</div>
+    <div style="font-size:11px;letter-spacing:2px;color:var(--amber);text-transform:uppercase;font-weight:600;margin-bottom:18px;">India's Mechanic Network</div>
+    <div class="card-sub" style="text-align:center;font-size:15px;line-height:1.8;">
+      MechFinder connects you with <b style="color:var(--white);">trusted, verified mechanics</b> near you — instantly.<br>
+      Book services, get pricing, and track your repair, all from one place.
+    </div>
   </div>
+  <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:22px;">
+    <div style="display:flex;align-items:center;gap:12px;background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.15);border-radius:12px;padding:12px 16px;">
+      <span style="font-size:22px;">📍</span>
+      <div><div style="font-size:13px;font-weight:700;color:var(--white);">Find Nearby Mechanics</div><div style="font-size:12px;color:var(--muted2);">Covering Guntur, Vijayawada, Mangalagiri & more</div></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.15);border-radius:12px;padding:12px 16px;">
+      <span style="font-size:22px;">🛠️</span>
+      <div><div style="font-size:13px;font-weight:700;color:var(--white);">Choose Your Services</div><div style="font-size:12px;color:var(--muted2);">Engine, brakes, tyres, AC, electricals & more</div></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.15);border-radius:12px;padding:12px 16px;">
+      <span style="font-size:22px;">💰</span>
+      <div><div style="font-size:13px;font-weight:700;color:var(--white);">Transparent Pricing</div><div style="font-size:12px;color:var(--muted2);">See costs upfront — no hidden charges</div></div>
+    </div>
+  </div>
+  <button class="btn btn-primary" onclick="go('user_login')">Get Started →</button>
+  <button class="btn btn-ghost" style="margin-top:10px;" onclick="go('register_choice')">I'm a Mechanic — Login / Register</button>
 </div>`,
 
 user_login:`<div class="card">
@@ -607,6 +625,10 @@ search_mode:()=>`<div class="card">
     <button class="choice-btn" onclick="go('direct_search')">
       <div class="choice-icon ci-green">📍</div>
       <div><div class="choice-label">Find Nearest Mechanic</div><div class="choice-desc">Search directly by your location</div></div>
+    </button>
+    <button class="choice-btn" onclick="go('nh_mechanics')" style="border-color:rgba(239,68,68,0.4);background:linear-gradient(135deg,rgba(239,68,68,0.08),rgba(19,21,26,0.9));">
+      <div class="choice-icon" style="background:linear-gradient(135deg,rgba(239,68,68,0.2),rgba(239,68,68,0.05));border:1px solid rgba(239,68,68,0.3);font-size:21px;width:46px;height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;">🛣️</div>
+      <div><div class="choice-label" style="color:#f87171;">I'm on National Highway</div><div class="choice-desc">Emergency NH roadside mechanics</div></div>
     </button>
   </div>
 </div>`,
@@ -655,11 +677,12 @@ pick_address:()=>`<div class="card">
   <div class="card-title">Your Location</div>
   <div class="card-sub">We'll assign the nearest available mechanic</div>
   <div class="form-group"><label>City / Area</label>
-    <select id="as">
+    <select id="as" onchange="onLocationChange(this.value,'nh-panel')">
       <option value="">-- Select location --</option>
       ${Object.keys(MECHANICS_BIKE).map(a=>`<option value="${a}">${cap(a)}</option>`).join('')}
     </select>
   </div>
+  <div id="nh-panel"></div>
   <div id="al"></div>
   <button class="btn btn-primary" onclick="doBook()">Confirm Booking →</button>
 </div>`,
@@ -669,13 +692,41 @@ direct_search:`<div class="card">
   <div class="card-title">Find Mechanic</div>
   <div class="card-sub">Locate the nearest mechanic to your area</div>
   <div class="form-group"><label>Your Location</label>
-    <select id="as">
+    <select id="as" onchange="onLocationChange(this.value,'nh-panel')">
       <option value="">-- Select location --</option>
       ${Object.keys(MECHANICS_OTHER).map(a=>`<option value="${a}">${cap(a)}</option>`).join('')}
     </select>
   </div>
+  <div id="nh-panel"></div>
   <div id="al"></div>
   <button class="btn btn-primary" onclick="doDirect()">Find →</button>
+</div>`,
+
+nh_mechanics:()=>`<div class="card">
+  <button class="back-link" onclick="go('search_mode')">&#8592; Back</button>
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+    <span style="font-size:28px;">&#128739;</span>
+    <div class="card-title" style="margin-bottom:0;">NH Mechanics</div>
+  </div>
+  <div class="card-sub">Emergency roadside mechanics on National Highways &mdash; available 24/7</div>
+  <div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);border-radius:11px;padding:10px 14px;margin-bottom:18px;font-size:12px;color:#f87171;font-weight:600;">
+    &#9888;&#65039; For breakdowns &mdash; these mechanics are on-call around the clock on the highway
+  </div>
+  ${MECHANICS_NH_MANGALAGIRI.map(m=>`
+    <div style="background:linear-gradient(135deg,rgba(24,28,34,0.9),rgba(19,21,26,0.95));border:1.5px solid var(--border);border-radius:14px;padding:16px;margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
+        <div>
+          <div style="font-size:15px;font-weight:700;color:var(--white);margin-bottom:3px;">${m.name}</div>
+          <div style="font-size:12px;color:var(--muted2);margin-bottom:6px;">${m.specialty}</div>
+          <div style="font-size:11px;font-weight:600;color:var(--amber);background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);padding:3px 9px;border-radius:8px;display:inline-block;">${m.tag}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;">
+          <div style="font-size:14px;font-weight:700;color:var(--green);">&#11088; ${m.rating}</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted2);margin-top:5px;">&#128222; ${m.phone}</div>
+        </div>
+      </div>
+    </div>`).join('')}
+  <button class="btn btn-ghost" style="margin-top:6px;" onclick="go('search_mode')">&#8592; Back to Options</button>
 </div>`,
 
 booking_result:()=>{const d=state.data,m=d.mechanic;return`<div class="card">
@@ -1049,6 +1100,33 @@ reg_success:()=>{
 };
 
 // LOGIC
+function onLocationChange(val, panelId){
+  const panel = document.getElementById(panelId);
+  if(!panel) return;
+  if(val !== 'mangalagiri'){ panel.innerHTML=''; return; }
+  panel.innerHTML=`
+    <div style="margin-bottom:14px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+        <span style="font-size:16px;">🛣️</span>
+        <span style="font-size:12px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--amber);">National Highway Mechanics — Mangalagiri</span>
+      </div>
+      ${MECHANICS_NH_MANGALAGIRI.map(m=>`
+        <div style="background:linear-gradient(135deg,rgba(245,158,11,0.07),rgba(245,158,11,0.02));border:1.5px solid rgba(245,158,11,0.25);border-radius:13px;padding:13px 15px;margin-bottom:8px;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <div>
+              <div style="font-size:14px;font-weight:700;color:var(--white);margin-bottom:3px;">${m.name}</div>
+              <div style="font-size:11px;color:var(--muted2);margin-bottom:4px;">${m.specialty}</div>
+              <div style="font-size:10px;color:var(--amber);font-weight:600;">${m.tag}</div>
+            </div>
+            <div style="text-align:right;flex-shrink:0;margin-left:10px;">
+              <div style="font-size:13px;font-weight:700;color:var(--green);">⭐ ${m.rating}</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted2);margin-top:4px;">📞 ${m.phone}</div>
+            </div>
+          </div>
+        </div>`).join('')}
+    </div>`;
+}
+
 function updateHints(){
   const pw=document.getElementById('up')?.value||'';
   const c=checkPw(pw);
